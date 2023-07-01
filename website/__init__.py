@@ -1,4 +1,5 @@
 from flask import Flask
+import sqlalchemy
 from flask_sqlalchemy import SQLAlchemy
 from testcontainers.postgres import PostgresContainer
 from flask_login import LoginManager
@@ -10,12 +11,13 @@ DB_NAME = "database.db"
 def create_app():
     app = Flask(__name__)
 
-    app.config['SECRET_KEY'] = 'afsdadfsasdf'
+    # app.config['SECRET_KEY'] = 'afsdadfsasdf'
 
     with PostgresContainer('postgres:9.5') as postgresContainer:
-        engine = SQLAlchemy.create_engine(postgresContainer.get_connection_url())
-        result = engine.execute("select version()")
-        version, = result.fetchone()
+        engine = sqlalchemy.create_engine(postgresContainer.get_connection_url())
+        with engine.begin() as connection:
+            result = connection.execute(sqlalchemy.text("select version()"))
+            version, = result.fetchone()
 
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_NAME}'
     db.init_app(app)
