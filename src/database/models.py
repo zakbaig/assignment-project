@@ -1,5 +1,7 @@
-from src.app import db
+from . import PostgresClient
 from flask_login import UserMixin
+
+db = PostgresClient().get_sqlalchemy()
 
 
 class LunchCard(db.Model):
@@ -9,6 +11,7 @@ class LunchCard(db.Model):
     date = db.Column(db.DateTime(timezone=True))
     card_balance = db.Column(db.Integer)
     employee_id = db.Column(db.Integer, db.ForeignKey('employee.id'))
+
 
 class Employee(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)

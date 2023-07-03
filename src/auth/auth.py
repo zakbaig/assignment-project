@@ -1,7 +1,6 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
-from .models import Employee
+from src.database import PostgresClient, Employee
 from werkzeug.security import generate_password_hash, check_password_hash
-from src.app import db, engine
 from flask_login import login_user, login_required, logout_user, current_user
 
 auth = Blueprint('auth', __name__)
@@ -15,7 +14,8 @@ def validation_error_exit(message, template_file):
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        with engine.begin():
+        postgres_client = PostgresClient()
+        with postgres_client.get_sqlengine().begin():
             email = request.form.get('email')
             employee = Employee.query.filter_by(email=email).first()
             if employee is None:
@@ -43,7 +43,8 @@ def logout():
 def sign_up():
     if request.method == 'POST':
         email = request.form.get('email')
-        with engine.begin():
+        postgres_client = PostgresClient()
+        with postgres_client.get_sqlengine().begin():
             employee = Employee.query.filter_by(email=email).first()
             if employee:
                 print(f'Exit from sign-up, this employee already exists - ${employee}')
@@ -65,6 +66,7 @@ def sign_up():
             return validation_error_exit('Passwords do not match', 'sign_up.html')
 
         new_employee = Employee(email=email, first_name=first_name, password=generate_password_hash(password, method='sha256'))
+        db = postgres_client.get_sqlalchemy()
         db.session.add(new_employee)
         db.session.commit()
 
