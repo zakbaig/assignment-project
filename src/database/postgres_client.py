@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from testcontainers.postgres import PostgresContainer
-from src.helpers import Singleton
+from src.singleton import Singleton
 
 
 class PostgresClient(Singleton):
