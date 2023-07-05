@@ -4,6 +4,7 @@ from src.singleton import Singleton
 
 
 class PostgresClient(Singleton):
+    # Instead of __init__, override init from base Singleton class to make use of Singleton pattern
     def init(self):
         self._sqlalchemy = SQLAlchemy()
         self._postgres_container = PostgresContainer()
