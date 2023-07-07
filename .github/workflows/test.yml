@@ -18,7 +18,7 @@ jobs:
           pip install -r requirements.txt
 
   lint:
-
+    needs: ['build']
     runs-on: ubuntu-latest
 
     steps:
@@ -26,6 +26,7 @@ jobs:
       - name: Get cached dependencies
         uses: actions/setup-python@v4
         with:
+          python-version: '3.11'
           cache: 'pip'
       - name: Lint with ruff
         if: success() || failure()
