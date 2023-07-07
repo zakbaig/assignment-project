@@ -13,7 +13,7 @@ jobs:
         id: cache-python-environment
         with:
           path: ${{ env.pythonLocation }}
-          key: ${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
+          key: 'cache-python-environment'
       - run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
@@ -27,7 +27,7 @@ jobs:
         id: cache-python-environment
         with:
           path: ${{ env.pythonLocation }}
-          key: ${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
+          key: 'cache-python-environment'
       - name: Lint with ruff
         if: success() || failure()
         run: |
