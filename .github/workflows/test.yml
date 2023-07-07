@@ -10,6 +10,7 @@ jobs:
         with:
           python-version: '3.11'
       - uses: actions/cache@v3
+        id: cache-python-environment
         with:
           path: ${{ env.pythonLocation }}
           key: ${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
@@ -23,6 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/cache@v3
+        id: cache-python-environment
         with:
           path: ${{ env.pythonLocation }}
           key: ${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
