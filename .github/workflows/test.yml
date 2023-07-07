@@ -23,7 +23,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Lint with ruff
-        uses: actions/setup-python@v4
         if: success() || failure()
         run: |
           # check what lint errors there are          
