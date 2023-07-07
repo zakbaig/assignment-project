@@ -32,8 +32,7 @@ jobs:
         with:
           path: ${{ env.pythonLocation }}
           key: ${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
-      - name: Lint with ruff
-        if: success() || failure()
+      - continue-on-error: true
         run: |
           # check what lint errors there are
           ruff check .
