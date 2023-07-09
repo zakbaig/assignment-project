@@ -1,7 +1,7 @@
 import secrets
 from flask import Flask
 from flask_login import LoginManager
-from src.database import PostgresClient, Employee
+from src.database import PostgresClient, User
 from src.views import views
 
 
@@ -25,7 +25,7 @@ def start():
 
     @login_manager.user_loader
     def load_user(user_id):
-        return Employee.query.get(int(user_id))
+        return User.query.get(int(user_id))
 
     app.run()
 
