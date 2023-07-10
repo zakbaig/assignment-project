@@ -1,7 +1,8 @@
 import secrets
 from flask import Flask
 from flask_login import LoginManager
-from src.database import PostgresClient, User
+from flask_security import SQLAlchemySessionUserDatastore, Security
+from src.database import PostgresClient, User, Role
 from src.views import views
 
 
@@ -15,6 +16,9 @@ def start():
     app.register_blueprint(views, url_prefix='/')
 
     db.init_app(app)
+    user_datastore = SQLAlchemySessionUserDatastore(db.session, User, Role)
+    security = Security(app, user_datastore)
+
     with app.app_context():
         db.create_all()
         print('Database created!')
