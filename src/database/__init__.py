@@ -1,2 +1,2 @@
 from .postgres_client import PostgresClient
-from .models import Employee, LunchCard
+from .models import User, LunchCard
