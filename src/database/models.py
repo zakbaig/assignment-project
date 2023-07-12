@@ -6,14 +6,12 @@ db = PostgresClient().get_sqlalchemy()
 
 class LunchCard(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.String(1000))
-    # date = db.Column(db.DateTime(timezone=True, default=func.now()))
-    date = db.Column(db.DateTime(timezone=True))
+    created_on = db.Column(db.DateTime(timezone=True))
     card_balance = db.Column(db.Integer)
-    employee_id = db.Column(db.Integer, db.ForeignKey('employee.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
 
-class Employee(db.Model, UserMixin):
+class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(150), unique=True)
     password = db.Column(db.String(150))

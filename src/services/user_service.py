@@ -1,34 +1,30 @@
-from src.database import PostgresClient, Employee
+from src.database import PostgresClient, User
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
-def get_employee_by_email(email):
+def get_user_by_email(email):
+    user = User.query.filter_by(email=email).first()
+    if user is None:
+        return None
+    else:
+        return user
+
+
+def get_user_by_credentials(email, password):
+    user = User.query.filter_by(email=email).first()
+    if user is None:
+        return None
+    elif not check_password_hash(user.password, password):
+        return None
+    else:
+        return user
+
+
+def create_new_user(email, first_name, last_name, password):
     postgres_client = PostgresClient()
-    with postgres_client.get_sqlengine().begin():
-        employee = Employee.query.filter_by(email=email).first()
-        if employee is None:
-            return None
-        else:
-            return employee
-
-
-def get_employee_by_credentials(email, password):
-    postgres_client = PostgresClient()
-    with postgres_client.get_sqlengine().begin():
-        employee = Employee.query.filter_by(email=email).first()
-        if employee is None:
-            return None
-        elif not check_password_hash(employee.password, password):
-            return None
-        else:
-            return employee
-
-
-def create_new_employee(email, first_name, last_name, password):
-    postgres_client = PostgresClient()
-    new_employee = Employee(email=email, first_name=first_name,
-                            last_name=last_name, password=generate_password_hash(password, method='sha256'))
+    new_user = User(email=email, first_name=first_name,
+                        last_name=last_name, password=generate_password_hash(password, method='sha256'))
     db = postgres_client.get_sqlalchemy()
-    db.session.add(new_employee)
+    db.session.add(new_user)
     db.session.commit()
-    return new_employee
+    return new_user

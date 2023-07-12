@@ -22,7 +22,7 @@ def get_sign_up_form(request_form):
 
 def validate_sign_up_inputs(request_form):
     form = get_sign_up_form(request_form)
-    employee = user_service.get_employee_by_email(form['email'])
+    employee = user_service.get_user_by_email(form['email'])
     if employee:
         return exit_with_validation_error('Email already exists', 'sign_up.html')
     elif len(form['email']) < 4:
@@ -36,7 +36,7 @@ def validate_sign_up_inputs(request_form):
     elif form['password'] != form['confirm_password']:
         return exit_with_validation_error('Passwords do not match', 'sign_up.html')
     else:
-        new_employee = user_service.create_new_employee(
+        new_employee = user_service.create_new_user(
             form['email'], form['first_name'], form['last_name'], form['password']
         )
         login_user(new_employee, remember=True)
@@ -55,7 +55,7 @@ def login():
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
-        employee = user_service.get_employee_by_credentials(email, password)
+        employee = user_service.get_user_by_credentials(email, password)
         if employee is None:
             return exit_with_validation_error('Incorrect credentials', 'login.html')
         else:
