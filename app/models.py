@@ -21,6 +21,13 @@ class User(UserMixin, db.Model):
     def set_role(self, role):
         self.roles.append(Role(name=role))
 
+    def has_role(self, role):
+        for user_role in self.roles:
+            if user_role.name == role:
+                return True
+
+        return False
+
 
 @login.user_loader
 def load_user(id):

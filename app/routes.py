@@ -6,6 +6,14 @@ from app.forms import LoginForm, RegistrationForm
 from app.models import User, Role
 
 
+def redirect_to_previous_page_or_index():
+    previous_page = request.args.get('next')
+    if not previous_page or urlparse(previous_page).netloc != '':
+        previous_page = url_for('index')
+
+    return redirect(previous_page)
+
+
 @flask_app.before_request
 def before_request():
     admin_email_address = flask_app.config.get('ADMIN_EMAIL_ADDRESS')
@@ -28,17 +36,17 @@ def index():
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
+
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email_address=form.email_address.data).first()
         if user is None or not user.check_password(form.password.data):
             flash('Invalid credentials', 'validation-error')
             return redirect(url_for('login'))
+
         login_user(user, remember=form.remember_me.data)
-        next_page = request.args.get('next')
-        if not next_page or urlparse(next_page).netloc != '':
-            next_page = url_for('index')
-        return redirect(next_page)
+        return redirect_to_previous_page_or_index()
+
     return render_template('login.html', title='Login', form=form)
 
 
@@ -53,6 +61,7 @@ def logout():
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
+
     form = RegistrationForm()
     if form.validate_on_submit():
         user = User(email_address=form.email_address.data,
@@ -63,15 +72,25 @@ def register():
         db.session.commit()
         flash('Congratulations, you are now a registered user!')
         return redirect(url_for('login'))
+
     return render_template('register.html', title='Register', form=form)
 
 
 @flask_app.route('/admin')
 @login_required
 def admin():
-    for role in current_user.roles:
-        print(role.name)
-        if role.name == 'Admin':
-            return render_template('admin.html')
+    if not current_user.has_role('Admin'):
+        return redirect_to_previous_page_or_index()
 
-    return redirect(url_for('login'))
+    users = User.query.all()
+    return render_template('admin.html', title='Admin', users=users)
+
+
+@flask_app.route('/admin/edit_user/<string:user_id>')
+@login_required
+def edit_user(user_id):
+    if not current_user.has_role('Admin'):
+        return redirect_to_previous_page_or_index()
+
+    user = User.query.get(int(user_id))
+    return render_template('edit_user.html', title='Edit User', user=user)
