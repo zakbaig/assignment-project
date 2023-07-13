@@ -2,18 +2,16 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
-# from flask_user import UserManager
 from flask_bootstrap import Bootstrap
 from config import Config
 
-app = Flask(__name__)
-app.config.from_object(Config)
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
-login = LoginManager(app)
+flask_app = Flask(__name__)
+flask_app.config.from_object(Config)
+db = SQLAlchemy(flask_app)
+migrate = Migrate(flask_app, db)
+login = LoginManager(flask_app)
 login.login_view = 'login'
-bootstrap = Bootstrap(app)
+bootstrap = Bootstrap(flask_app)
+
 
 from app import routes, models
-
-# user_manager = UserManager(app, db, models.User)

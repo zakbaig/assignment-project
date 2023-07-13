@@ -18,6 +18,9 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password, password)
 
+    def set_role(self, role):
+        self.roles.append(Role(name=role))
+
 
 @login.user_loader
 def load_user(id):

@@ -1,19 +1,30 @@
 from flask import render_template, flash, redirect, url_for, request
 from flask_login import login_user, logout_user, login_required, current_user
 from urllib.parse import urlparse
-from app import app, db
+from app import flask_app, db
 from app.forms import LoginForm, RegistrationForm
-from app.models import User
+from app.models import User, Role
 
 
-@app.route('/')
-@app.route('/index')
+@flask_app.before_request
+def before_request():
+    admin_email_address = flask_app.config.get('ADMIN_EMAIL_ADDRESS')
+    if not User.query.filter(User.email_address == admin_email_address).first():
+        user = User(email_address=admin_email_address)
+        user.set_password(flask_app.config.get('ADMIN_PASSWORD'))
+        user.roles.append(Role(name='Admin'))
+        db.session.add(user)
+        db.session.commit()
+
+
+@flask_app.route('/')
+@flask_app.route('/index')
 @login_required
 def index():
     return render_template('index.html', title='Home')
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@flask_app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
@@ -31,13 +42,14 @@ def login():
     return render_template('login.html', title='Login', form=form)
 
 
-@app.route('/logout')
+@flask_app.route('/logout')
+@login_required
 def logout():
     logout_user()
     return redirect(url_for('index'))
 
 
-@app.route('/register', methods=['GET', 'POST'])
+@flask_app.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
@@ -52,3 +64,14 @@ def register():
         flash('Congratulations, you are now a registered user!')
         return redirect(url_for('login'))
     return render_template('register.html', title='Register', form=form)
+
+
+@flask_app.route('/admin')
+@login_required
+def admin():
+    for role in current_user.roles:
+        print(role.name)
+        if role.name == 'Admin':
+            return render_template('admin.html')
+
+    return redirect(url_for('login'))

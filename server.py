@@ -1,9 +1,7 @@
-from app import app
-
-# from app import app, db
-# from app.models import User, LunchCard
+from app import flask_app
+# from app.models import User, LunchCard, Role
 #
 #
-# @app.shell_context_processor
+# @flask_app.shell_context_processor
 # def make_shell_context():
-#     return {'db': db, 'User': User, 'LunchCard': LunchCard}
+#     return {'db': db, 'User': User, 'LunchCard': LunchCard, 'Role': Role}
