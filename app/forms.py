@@ -7,7 +7,6 @@ from app.models import User
 class LoginForm(FlaskForm):
     email_address = StringField('Email Address', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
-    remember_me = BooleanField('Remember Me')
     submit = SubmitField('Login')
 
 
@@ -28,13 +27,17 @@ class RegistrationForm(FlaskForm):
 
 class EditUserForm(FlaskForm):
     email_address = StringField('Email Address', validators=[Email()])
-    password = PasswordField('Password')
     first_name = StringField('First Name')
     last_name = StringField('Last Name')
     role = StringField('Role')
     submit = SubmitField('Confirm Edit')
 
+    def __init__(self, original_email_address, *args, **kwargs):
+        super(EditUserForm, self).__init__(*args, **kwargs)
+        self.original_email_address = original_email_address
+
     def validate_email_address(self, email_address):
-        user = User.query.filter_by(email_address=email_address.data).first()
-        if user is not None:
-            raise ValidationError('Please use a different email address.')
+        if not email_address.data == self.original_email_address:
+            user = User.query.filter_by(email_address=email_address.data).first()
+            if user is not None:
+                raise ValidationError('Please use a different email address.')

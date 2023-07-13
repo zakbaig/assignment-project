@@ -10,6 +10,5 @@ class Config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     ADMIN_EMAIL_ADDRESS = os.environ.get('ADMIN_EMAIL_ADDRESS')
     ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD')
-    USER_ENABLE_EMAIL = False
-    USER_ENABLE_USERNAME = False
-    USER_REQUIRE_RETYPE_PASSWORD = False
+    ADMIN_FIRST_NAME = os.environ.get('ADMIN_FIRST_NAME')
+    ADMIN_LAST_NAME = os.environ.get('ADMIN_LAST_NAME')

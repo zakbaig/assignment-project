@@ -9,8 +9,8 @@ class User(UserMixin, db.Model):
     password = db.Column(db.String(150))
     first_name = db.Column(db.String(150))
     last_name = db.Column(db.String(150))
+    role = db.Column(db.String(150))
     lunch_cards = db.relationship('LunchCard')
-    roles = db.relationship('Role', secondary='user_role')
 
     def set_password(self, password):
         self.password = generate_password_hash(password)
@@ -18,15 +18,8 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password, password)
 
-    def set_role(self, role):
-        self.roles.append(Role(name=role))
-
     def has_role(self, role):
-        for user_role in self.roles:
-            if user_role.name == role:
-                return True
-
-        return False
+        return role == self.role
 
 
 @login.user_loader
@@ -39,15 +32,3 @@ class LunchCard(db.Model):
     created_on = db.Column(db.DateTime(timezone=True))
     card_balance = db.Column(db.Integer)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-
-
-class Role(db.Model):
-    id = db.Column(db.Integer(), primary_key=True)
-    name = db.Column(db.String(50), unique=True)
-
-
-class UserRole(db.Model):
-    id = db.Column(db.Integer(), primary_key=True)
-    user_id = db.Column(db.Integer(), db.ForeignKey('user.id', ondelete='CASCADE'))
-    role_id = db.Column(db.Integer(), db.ForeignKey('role.id', ondelete='CASCADE'))
-
