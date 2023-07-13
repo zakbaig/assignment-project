@@ -2,8 +2,8 @@ from flask import render_template, flash, redirect, url_for, request
 from flask_login import login_user, logout_user, login_required, current_user
 from urllib.parse import urlparse
 from app import flask_app, db
-from app.forms import LoginForm, RegistrationForm
-from app.models import User, Role
+from app.forms import LoginForm, RegistrationForm, EditUserForm
+from app.models import User
 
 
 def redirect_to_previous_page_or_index():
@@ -18,9 +18,10 @@ def redirect_to_previous_page_or_index():
 def before_request():
     admin_email_address = flask_app.config.get('ADMIN_EMAIL_ADDRESS')
     if not User.query.filter(User.email_address == admin_email_address).first():
-        user = User(email_address=admin_email_address)
+        user = User(email_address=admin_email_address, role='Admin',
+                    first_name=flask_app.config.get('ADMIN_FIRST_NAME'),
+                    last_name=flask_app.config.get('ADMIN_LAST_NAME'))
         user.set_password(flask_app.config.get('ADMIN_PASSWORD'))
-        user.roles.append(Role(name='Admin'))
         db.session.add(user)
         db.session.commit()
 
@@ -44,7 +45,7 @@ def login():
             flash('Invalid credentials', 'validation-error')
             return redirect(url_for('login'))
 
-        login_user(user, remember=form.remember_me.data)
+        login_user(user)
         return redirect_to_previous_page_or_index()
 
     return render_template('login.html', title='Login', form=form)
@@ -65,6 +66,7 @@ def register():
     form = RegistrationForm()
     if form.validate_on_submit():
         user = User(email_address=form.email_address.data,
+                    role='User',
                     first_name=form.first_name.data,
                     last_name=form.last_name.data)
         user.set_password(form.password.data)
@@ -86,11 +88,31 @@ def admin():
     return render_template('admin.html', title='Admin', users=users)
 
 
-@flask_app.route('/admin/edit_user/<string:user_id>')
+@flask_app.route('/edit_user/<string:user_id>', methods=['GET', 'POST'])
 @login_required
 def edit_user(user_id):
-    if not current_user.has_role('Admin'):
+    user = User.query.get(int(user_id))
+    if not user == current_user and not current_user.has_role('Admin'):
         return redirect_to_previous_page_or_index()
 
-    user = User.query.get(int(user_id))
-    return render_template('edit_user.html', title='Edit User', user=user)
+    form = EditUserForm(user.email_address)
+    if current_user == user:
+        del form.role
+
+    if request.method == 'GET':
+        form.email_address.data = user.email_address
+        form.first_name.data = user.first_name
+        form.last_name.data = user.last_name
+        if form.role is not None:
+            form.role.data = user.role
+    elif form.validate_on_submit():
+        user.email_address = form.email_address.data
+        user.first_name = form.first_name.data
+        user.last_name = form.last_name.data
+        if form.role is not None:
+            user.role = form.role.data
+
+        db.session.commit()
+        flash('Your changes have been saved.')
+
+    return render_template('edit_user.html', title='Edit User', user=user, form=form)

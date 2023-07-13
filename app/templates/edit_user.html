@@ -3,5 +3,9 @@
 
 {% block app_content %}
 <h1>Edit User</h1>
-<h2>{{ user.email_address }}!</h2>
+<div class="row">
+    <div class="col-md-6">
+        {{ wtf.quick_form(form) }}
+    </div>
+</div>
 {% endblock %}
