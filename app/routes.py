@@ -2,7 +2,7 @@ from flask import render_template, flash, redirect, url_for, request
 from flask_login import login_user, logout_user, login_required, current_user
 from urllib.parse import urlparse
 from app import flask_app, db
-from app.forms import LoginForm, RegistrationForm
+from app.forms import LoginForm, RegistrationForm, EditUserForm
 from app.models import User, Role
 
 
@@ -86,11 +86,19 @@ def admin():
     return render_template('admin.html', title='Admin', users=users)
 
 
-@flask_app.route('/admin/edit_user/<string:user_id>')
+@flask_app.route('/edit_user/<string:user_id>')
 @login_required
 def edit_user(user_id):
-    if not current_user.has_role('Admin'):
+    user = User.query.get(int(user_id))
+    if not user == current_user and not current_user.has_role('Admin'):
         return redirect_to_previous_page_or_index()
 
-    user = User.query.get(int(user_id))
-    return render_template('edit_user.html', title='Edit User', user=user)
+    form = EditUserForm()
+    if request.method == 'GET':
+        form.email_address.data = user.email_address
+        form.password.data = user.password
+        form.first_name.data = user.first_name
+        form.last_name.data = user.last_name
+    elif form.validate_on_submit():
+        pass
+    return render_template('edit_user.html', title='Edit User', user=user, form=form)
