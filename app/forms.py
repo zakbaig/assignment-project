@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField
-from wtforms.validators import DataRequired, ValidationError, Email, EqualTo
+from wtforms import StringField, PasswordField, SubmitField, SelectField
+from wtforms.validators import DataRequired, ValidationError, Email, EqualTo, Length
 from app.models import User
 
 
@@ -15,8 +15,8 @@ class RegistrationForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired()])
     confirm_password = PasswordField(
         'Confirm Password', validators=[DataRequired(), EqualTo('password')])
-    first_name = StringField('First Name', validators=[DataRequired()])
-    last_name = StringField('Last Name', validators=[DataRequired()])
+    first_name = StringField('First Name', validators=[DataRequired(), Length(min=2, max=25)])
+    last_name = StringField('Last Name', validators=[DataRequired(), Length(min=2, max=25)])
     submit = SubmitField('Register')
 
     def validate_email_address(self, email_address):
@@ -27,9 +27,9 @@ class RegistrationForm(FlaskForm):
 
 class EditUserForm(FlaskForm):
     email_address = StringField('Email Address', validators=[Email()])
-    first_name = StringField('First Name')
-    last_name = StringField('Last Name')
-    role = StringField('Role')
+    first_name = StringField('First Name', validators=[DataRequired(), Length(min=2, max=25)])
+    last_name = StringField('Last Name', validators=[DataRequired(), Length(min=2, max=25)])
+    role = SelectField('Role', choices=[('Admin', 'Admin'), ('User', 'User')])
     submit = SubmitField('Confirm Edit')
 
     def __init__(self, original_email_address, *args, **kwargs):

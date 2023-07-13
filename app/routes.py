@@ -96,7 +96,7 @@ def edit_user(user_id):
         return redirect_to_previous_page_or_index()
 
     form = EditUserForm(user.email_address)
-    if current_user.has_role('Admin') and current_user == user:
+    if current_user == user:
         del form.role
 
     if request.method == 'GET':
