@@ -11,13 +11,23 @@
         <th>Last Name</th>
         <th>Role</th>
         <th>Edit User</th>
+        <th>Delete User</th>
     </tr>
     <tr>
         <td>{{ user.email_address }}</td>
         <td>{{ user.first_name }}</td>
         <td>{{ user.last_name }}</td>
         <td>{{ user.role }}</td>
-        <td><a href="{{ url_for('edit_user', user_id=user.id) }}" class="btn btn-primary"></a></td>
+        {% if not current_user.has_role('Super Admin') and user.has_role('Super Admin') %}
+        <td><a href="#" class="btn btn-primary disabled" aria-disabled="true">Edit</a></td>
+        {% else %}
+        <td><a href="{{ url_for('edit_user', user_id=user.id) }}" class="btn btn-primary">Edit</a></td>
+        {% endif %}
+        {% if current_user != user and not user.has_role('Super Admin') %}
+        <td><a href="{{ url_for('delete_user', user_id=user.id) }}" class="btn btn-danger">Delete</a></td>
+        {% else %}
+        <td><a href="#" class="btn btn-danger disabled" aria-disabled="true">Delete</a></td>
+        {% endif %}
     </tr>
     {% endfor %}
 </table>
