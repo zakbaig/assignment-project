@@ -2,8 +2,8 @@ from flask import render_template, flash, redirect, url_for, request
 from flask_login import login_user, logout_user, login_required, current_user
 from urllib.parse import urlparse
 from app import flask_app, db
-from app.forms import LoginForm, RegistrationForm, EditUserForm
-from app.models import User
+from app.forms import LoginForm, RegistrationForm, EditUserForm, AddCouponForm, EditCouponForm
+from app.models import User, LunchCoupon
 
 
 def redirect_to_previous_page_or_index():
@@ -37,6 +37,28 @@ def index():
     return render_template('index.html', title='Home')
 
 
+@flask_app.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+
+    form = RegistrationForm()
+    del form.role
+
+    if form.validate_on_submit():
+        user = User(email_address=form.email_address.data,
+                    role='Regular',
+                    first_name=form.first_name.data,
+                    last_name=form.last_name.data)
+        user.set_password(form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        flash('Congratulations, you are now a registered user!')
+        return redirect(url_for('login'))
+
+    return render_template('register.html', title='Register', form=form)
+
+
 @flask_app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
@@ -62,29 +84,6 @@ def logout():
     return redirect(url_for('index'))
 
 
-@flask_app.route('/register', methods=['GET', 'POST'])
-def register():
-    if current_user.is_authenticated:
-        return redirect(url_for('index'))
-
-    form = RegistrationForm()
-    del form.role
-
-    if form.validate_on_submit():
-        user = User(email_address=form.email_address.data,
-                    role='Regular',
-                    first_name=form.first_name.data,
-                    last_name=form.last_name.data)
-        user.set_password(form.password.data)
-
-        db.session.add(user)
-        db.session.commit()
-        flash('Congratulations, you are now a registered user!')
-        return redirect(url_for('login'))
-
-    return render_template('register.html', title='Register', form=form)
-
-
 @flask_app.route('/admin')
 @login_required
 def admin():
@@ -93,6 +92,27 @@ def admin():
 
     users = User.query.all()
     return render_template('admin.html', title='Admin', users=users)
+
+
+@flask_app.route('/create_user', methods=['GET', 'POST'])
+@login_required
+def create_user():
+    if not current_user_is_admin_or_super_admin():
+        return redirect_to_previous_page_or_index()
+
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        user = User(email_address=form.email_address.data,
+                    role=form.role.data,
+                    first_name=form.first_name.data,
+                    last_name=form.last_name.data)
+        user.set_password(form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        flash('User created.')
+        return redirect(url_for('admin'))
+
+    return render_template('create_user.html', title='Create User', form=form)
 
 
 @flask_app.route('/edit_user/<string:user_id>', methods=['GET', 'POST'])
@@ -144,23 +164,51 @@ def delete_user(user_id):
     return redirect(url_for('admin'))
 
 
-@flask_app.route('/create_user', methods=['GET', 'POST'])
+@flask_app.route('/view_coupons/<string:user_id>', methods=['GET', 'POST'])
 @login_required
-def create_user():
-    if not current_user_is_admin_or_super_admin():
-        return redirect_to_previous_page_or_index()
+def view_coupons(user_id):
+    user = User.query.get(int(user_id))
+    return render_template('view_coupons.html', title='View Coupon', user=user)
 
-    form = RegistrationForm()
+
+@flask_app.route('/add_coupon/<string:user_id>', methods=['GET', 'POST'])
+@login_required
+def add_coupon(user_id):
+    user = User.query.get(int(user_id))
+    form = AddCouponForm()
     if form.validate_on_submit():
-        user = User(email_address=form.email_address.data,
-                    role=form.role.data,
-                    first_name=form.first_name.data,
-                    last_name=form.last_name.data)
-        user.set_password(form.password.data)
-
-        db.session.add(user)
+        lunch_coupon = LunchCoupon(discount=form.discount.data)
+        user.lunch_coupons.append(lunch_coupon)
         db.session.commit()
-        flash('User created.')
-        return redirect(url_for('admin'))
+        flash('Coupon added.')
+        return redirect(url_for('view_coupons', user_id=user_id))
 
-    return render_template('create_user.html', title='Create User', form=form)
+    return render_template('add_coupon.html', title='Add Coupon', form=form, user=user)
+
+
+@flask_app.route('/edit_coupon/<string:coupon_id>', methods=['GET', 'POST'])
+@login_required
+def edit_coupon(coupon_id):
+    lunch_coupon = LunchCoupon.query.get(int(coupon_id))
+    user = User.query.get(int(lunch_coupon.user_id))
+    form = EditCouponForm()
+    if request.method == 'GET':
+        form.discount.data = lunch_coupon.discount
+    elif form.validate_on_submit():
+        lunch_coupon.discount = form.discount.data
+        db.session.commit()
+        flash('Coupon edited.')
+        return redirect(url_for('view_coupons', user_id=user.id))
+
+    return render_template('edit_coupon.html', title='Edit Coupon', form=form, user=user)
+
+
+@flask_app.route('/delete_coupon/<string:coupon_id>', methods=['GET', 'POST'])
+@login_required
+def delete_coupon(coupon_id):
+    lunch_coupon = LunchCoupon.query.get(int(coupon_id))
+    user = User.query.get(int(lunch_coupon.user_id))
+    db.session.delete(lunch_coupon)
+    db.session.commit()
+    flash('Coupon deleted.')
+    return redirect(url_for('view_coupons', user_id=user.id))
