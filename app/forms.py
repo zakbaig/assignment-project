@@ -29,7 +29,7 @@ class EditUserForm(FlaskForm):
     email_address = StringField('Email Address', validators=[Email()])
     first_name = StringField('First Name', validators=[DataRequired(), Length(min=2, max=25)])
     last_name = StringField('Last Name', validators=[DataRequired(), Length(min=2, max=25)])
-    role = SelectField('Role', choices=[('Admin', 'Admin'), ('User', 'User')])
+    role = SelectField('Role', choices=[('Admin', 'Admin'), ('Regular', 'Regular')])
     submit = SubmitField('Confirm Edit')
 
     def __init__(self, original_email_address, *args, **kwargs):

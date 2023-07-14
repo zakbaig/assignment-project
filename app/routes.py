@@ -18,7 +18,7 @@ def redirect_to_previous_page_or_index():
 def before_request():
     admin_email_address = flask_app.config.get('ADMIN_EMAIL_ADDRESS')
     if not User.query.filter(User.email_address == admin_email_address).first():
-        user = User(email_address=admin_email_address, role='Admin',
+        user = User(email_address=admin_email_address, role='Super Admin',
                     first_name=flask_app.config.get('ADMIN_FIRST_NAME'),
                     last_name=flask_app.config.get('ADMIN_LAST_NAME'))
         user.set_password(flask_app.config.get('ADMIN_PASSWORD'))
@@ -66,7 +66,7 @@ def register():
     form = RegistrationForm()
     if form.validate_on_submit():
         user = User(email_address=form.email_address.data,
-                    role='User',
+                    role='Regular',
                     first_name=form.first_name.data,
                     last_name=form.last_name.data)
         user.set_password(form.password.data)
@@ -81,7 +81,7 @@ def register():
 @flask_app.route('/admin')
 @login_required
 def admin():
-    if not current_user.has_role('Admin'):
+    if not (current_user.has_role('Admin') or current_user.has_role('Super Admin')):
         return redirect_to_previous_page_or_index()
 
     users = User.query.all()
@@ -92,7 +92,7 @@ def admin():
 @login_required
 def edit_user(user_id):
     user = User.query.get(int(user_id))
-    if not user == current_user and not current_user.has_role('Admin'):
+    if not user == current_user and (not (current_user.has_role('Admin') or current_user.has_role('Super Admin'))):
         return redirect_to_previous_page_or_index()
 
     form = EditUserForm(user.email_address)
@@ -116,3 +116,15 @@ def edit_user(user_id):
         flash('Your changes have been saved.')
 
     return render_template('edit_user.html', title='Edit User', user=user, form=form)
+
+
+@flask_app.route('/delete_user/<string:user_id>', methods=['GET', 'POST'])
+@login_required
+def delete_user(user_id):
+    if not (current_user.has_role('Admin') or current_user.has_role('Super Admin')):
+        return redirect_to_previous_page_or_index()
+
+    user = User.query.get(int(user_id))
+    db.session.delete(user)
+    db.session.commit()
+    return redirect(url_for('admin'))
