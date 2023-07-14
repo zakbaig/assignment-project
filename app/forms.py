@@ -17,6 +17,7 @@ class RegistrationForm(FlaskForm):
         'Confirm Password', validators=[DataRequired(), EqualTo('password')])
     first_name = StringField('First Name', validators=[DataRequired(), Length(min=2, max=25)])
     last_name = StringField('Last Name', validators=[DataRequired(), Length(min=2, max=25)])
+    role = SelectField('Role', choices=[('Admin', 'Admin'), ('Regular', 'Regular')])
     submit = SubmitField('Register')
 
     def validate_email_address(self, email_address):
