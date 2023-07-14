@@ -21,13 +21,14 @@ def current_user_is_admin_or_super_admin():
 @flask_app.before_request
 def before_request():
     admin_email_address = flask_app.config.get('ADMIN_EMAIL_ADDRESS')
-    if not User.query.filter(User.email_address == admin_email_address).first():
-        user = User(email_address=admin_email_address, role='Super Admin',
-                    first_name=flask_app.config.get('ADMIN_FIRST_NAME'),
-                    last_name=flask_app.config.get('ADMIN_LAST_NAME'))
-        user.set_password(flask_app.config.get('ADMIN_PASSWORD'))
-        db.session.add(user)
-        db.session.commit()
+    if admin_email_address is not None:
+        if not User.query.filter(User.email_address == admin_email_address).first():
+            user = User(email_address=admin_email_address, role='Super Admin',
+                        first_name=flask_app.config.get('ADMIN_FIRST_NAME'),
+                        last_name=flask_app.config.get('ADMIN_LAST_NAME'))
+            user.set_password(flask_app.config.get('ADMIN_PASSWORD'))
+            db.session.add(user)
+            db.session.commit()
 
 
 @flask_app.route('/')
