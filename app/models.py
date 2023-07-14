@@ -5,12 +5,12 @@ from app import db, login
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    email_address = db.Column(db.String(150), index=True, unique=True)
-    password = db.Column(db.String(150))
-    first_name = db.Column(db.String(150))
-    last_name = db.Column(db.String(150))
-    role = db.Column(db.String(150))
-    lunch_cards = db.relationship('LunchCard')
+    email_address = db.Column(db.String(50), index=True, unique=True)
+    password = db.Column(db.String(50))
+    first_name = db.Column(db.String(50))
+    last_name = db.Column(db.String(50))
+    role = db.Column(db.String(50))
+    lunch_coupons = db.relationship('LunchCoupon')
 
     def set_password(self, password):
         self.password = generate_password_hash(password)
@@ -27,8 +27,7 @@ def load_user(id):
     return User.query.get(int(id))
 
 
-class LunchCard(db.Model):
+class LunchCoupon(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    created_on = db.Column(db.DateTime(timezone=True))
-    card_balance = db.Column(db.Integer)
+    discount = db.Column(db.Integer)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
