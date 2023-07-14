@@ -14,6 +14,10 @@ def redirect_to_previous_page_or_index():
     return redirect(previous_page)
 
 
+def current_user_is_admin_or_super_admin():
+    return current_user.has_role('Admin') or current_user.has_role('Super Admin')
+
+
 @flask_app.before_request
 def before_request():
     admin_email_address = flask_app.config.get('ADMIN_EMAIL_ADDRESS')
@@ -64,12 +68,15 @@ def register():
         return redirect(url_for('index'))
 
     form = RegistrationForm()
+    del form.role
+
     if form.validate_on_submit():
         user = User(email_address=form.email_address.data,
                     role='Regular',
                     first_name=form.first_name.data,
                     last_name=form.last_name.data)
         user.set_password(form.password.data)
+
         db.session.add(user)
         db.session.commit()
         flash('Congratulations, you are now a registered user!')
@@ -81,7 +88,7 @@ def register():
 @flask_app.route('/admin')
 @login_required
 def admin():
-    if not (current_user.has_role('Admin') or current_user.has_role('Super Admin')):
+    if not current_user_is_admin_or_super_admin():
         return redirect_to_previous_page_or_index()
 
     users = User.query.all()
@@ -92,11 +99,14 @@ def admin():
 @login_required
 def edit_user(user_id):
     user = User.query.get(int(user_id))
-    if not user == current_user and (not (current_user.has_role('Admin') or current_user.has_role('Super Admin'))):
+    if not user == current_user and not current_user_is_admin_or_super_admin():
+        return redirect_to_previous_page_or_index()
+
+    if not current_user.has_role('Super Admin') and user.has_role('Super Admin'):
         return redirect_to_previous_page_or_index()
 
     form = EditUserForm(user.email_address)
-    if current_user == user:
+    if (current_user.has_role('Super Admin') and user.has_role('Super Admin')) or (current_user.has_role('Regular')):
         del form.role
 
     if request.method == 'GET':
@@ -118,13 +128,39 @@ def edit_user(user_id):
     return render_template('edit_user.html', title='Edit User', user=user, form=form)
 
 
-@flask_app.route('/delete_user/<string:user_id>', methods=['GET', 'POST'])
+@flask_app.route('/delete_user/<string:user_id>')
 @login_required
 def delete_user(user_id):
-    if not (current_user.has_role('Admin') or current_user.has_role('Super Admin')):
+    user = User.query.get(int(user_id))
+    if not current_user_is_admin_or_super_admin() or current_user == user:
         return redirect_to_previous_page_or_index()
 
-    user = User.query.get(int(user_id))
+    if user.has_role('Super Admin'):
+        return redirect_to_previous_page_or_index()
+
     db.session.delete(user)
     db.session.commit()
+    flash('User deleted.')
     return redirect(url_for('admin'))
+
+
+@flask_app.route('/create_user', methods=['GET', 'POST'])
+@login_required
+def create_user():
+    if not current_user_is_admin_or_super_admin():
+        return redirect_to_previous_page_or_index()
+
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        user = User(email_address=form.email_address.data,
+                    role=form.role.data,
+                    first_name=form.first_name.data,
+                    last_name=form.last_name.data)
+        user.set_password(form.password.data)
+
+        db.session.add(user)
+        db.session.commit()
+        flash('User created.')
+        return redirect(url_for('admin'))
+
+    return render_template('create_user.html', title='Create User', form=form)
