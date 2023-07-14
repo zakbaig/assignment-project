@@ -12,4 +12,6 @@ All account passwords are stored hashed and not in plain text.
 
 This web application has been built using Python's Flask framework. An SQLite database is used during development for fast feedback. The application has been deployed via Heroku and uses a PostgreSQL database in the deployed environment. The web app can be found at this link: https://flask-lunch-coupon-service-2fb8336bc15f.herokuapp.com/
 
-The database uses 2 tables - a User table and a LunchCoupon table. The User table has a one-to-many relationship with the LunchCoupon table.
+The database uses 2 tables - a User table and a LunchCoupon table. The User table has a one-to-many relationship with the LunchCoupon table. An entity relationship diagram can be found below.
+
+![Screenshot](https://github.com/zakbaig/assignment-project/assets/59240081/caf3663c-31f8-4f45-8225-31943ce38404)
