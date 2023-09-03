@@ -1,0 +1,60 @@
+image: python:3.11
+
+stages:
+  - build
+  - test
+  - deploy
+
+install-packages:
+  stage: build
+  script:
+    - python -m pip install virtualenv
+    - virtualenv venv
+    - source venv/bin/activate
+    - python -m pip install --upgrade pip
+    - python -m pip install -r requirements.txt
+  artifacts:
+    expire_in: 10 mins
+    paths:
+      - venv/
+
+pylint:
+  stage: build
+  dependencies:
+    - install-packages
+  needs: [install-packages]
+  script:
+    - source venv/bin/activate
+    - pylint *.py
+  allow_failure: true
+
+docker-image-build-and-push:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME .
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
+
+unit-test:
+  stage: test
+  dependencies:
+    - install-packages
+  needs: [install-packages]
+  script:
+    - source venv/bin/activate
+    - pytest
+
+heroku-deploy:
+  stage: deploy
+  needs: [unit-test]
+  script:
+    - git remote add heroku https://heroku:$HEROKU_API_KEY@git.heroku.com/flask-lunch-coupon-service.git
+    - git push -f heroku HEAD:main
+  rules:
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+  environment: production
