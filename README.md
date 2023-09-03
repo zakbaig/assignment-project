@@ -30,8 +30,25 @@ All these dependencies are initialised in one place - the __init__.py file withi
 ## Run Locally
 
 To run this application on your machine:
-- git clone the repo
+- Git clone the repo
 - Create a virtual Python environment e.g. `python -m venv venv`
 - Install the packages listed in the requirements.txt file - `python -m pip install -r requirements.txt`
 - Use Flask-Migrate CLI commands to initialise the database - `flask db init; flask db migrate; flask db upgrade`
-- Finally run `flask run`
+- Run the following in the CLI `flask run`
+- Navigate to localhost in your browser
+
+## Docker
+
+You can also run this application through Docker.
+
+- Git clone the repo
+- Run `docker build -t lunch-coupon-service .`
+- Run `docker run -p 80:5000 --env-file=.dockerenv lunch-coupon-service`
+- Navigate to localhost in your browser
+
+Instead of cloning the repo and building the Docker image on your machine, you can instead pull the image from the GitLab repo's Container Registry. The CI/CD pipeline automatically builds the image and pushes it to GitLab via the job `docker-image-build-and-push`.
+
+- Login to GitLab's Registry `docker login registry.gitlab.com` (you will need to generate an access token)
+- Pull the image `docker pull registry.gitlab.com/zakaria.baig/assignment-project:main`
+- Use the image to run the container whilst supplying your own Admin ENV vars `docker run -p 80:5000 --env ADMIN_EMAIL_ADDRESS=[placeholder] --env ADMIN_PASSWORD=[placeholder] --env ADMIN_FIRST_NAME=[placeholder] --env ADMIN_LAST_NAME=[placeholder] registry.gitlab.com/zakaria.baig/assignment-project:main`
+- Navigate to localhost in your browser
