@@ -32,6 +32,7 @@ All these dependencies are initialised in one place - the __init__.py file withi
 To run this application on your machine:
 - Git clone the repo
 - Create a virtual Python environment e.g. `python -m venv venv`
+- Activate the virtual environment e.g. `source venv/bin/activate`
 - Install the packages listed in the requirements.txt file - `python -m pip install -r requirements.txt`
 - Use Flask-Migrate CLI commands to initialise the database - `flask db init; flask db migrate; flask db upgrade`
 - Run the following in the CLI `flask run`
