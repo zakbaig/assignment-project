@@ -53,3 +53,7 @@ Instead of cloning the repo and building the Docker image on your machine, you c
 - Pull the image `docker pull registry.gitlab.com/zakaria.baig/assignment-project:main`
 - Use the image to run the container whilst supplying your own Admin ENV vars `docker run -p 80:5000 --env ADMIN_EMAIL_ADDRESS=[placeholder] --env ADMIN_PASSWORD=[placeholder] --env ADMIN_FIRST_NAME=[placeholder] --env ADMIN_LAST_NAME=[placeholder] registry.gitlab.com/zakaria.baig/assignment-project:main`
 - Navigate to localhost in your browser
+
+## Tests
+
+With the Python environment setup correctly (see 'Run Locally' section), unit tests can be run via the following command - `python -m unit_tests`
