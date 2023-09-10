@@ -47,7 +47,7 @@ unit-test:
   needs: [install-packages]
   script:
     - source venv/bin/activate
-    - pytest
+    - pytest unit_tests.py
 
 heroku-deploy:
   stage: deploy
