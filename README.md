@@ -56,4 +56,4 @@ Instead of cloning the repo and building the Docker image on your machine, you c
 
 ## Tests
 
-With the Python environment setup correctly (see 'Run Locally' section), unit tests can be run via the following command - `python -m unit_tests`
+With the Python environment setup correctly (see 'Run Locally' section), unit tests can be run via the following command - `python -m pytest unit_tests.py`
