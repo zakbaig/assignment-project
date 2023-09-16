@@ -35,17 +35,23 @@ To run this application on your machine:
 - Activate the virtual environment e.g. `source venv/bin/activate`
 - Install the packages listed in the requirements.txt file - `python -m pip install -r requirements.txt`
 - Use Flask-Migrate CLI commands to initialise the database - `flask db init; flask db migrate; flask db upgrade`
-- Run the following in the CLI `flask run`
+- Run the following in the command line `flask run`
 - Navigate to localhost in your browser
 
 ## Docker
 
-You can also run this application through Docker.
+You can also run this application through Docker (uses an in-memory DB).
 
 - Git clone the repo
 - Run `docker build -t lunch-coupon-service .`
 - Run `docker run -p 80:5000 --env-file=.dockerenv lunch-coupon-service`
 - Navigate to localhost in your browser
+
+Docker Compose is also available. Running through Docker Compose simulates a running environment closer to that of the one in production as it creates and uses a separate Postgres container instead of an in-memory DB. This means you can stop and restart the lunch-coupon container and still be able to access data created from before the service was restarted.
+
+- Git clone the repo
+- Run `docker-compose up -d`
+- Navigate to localhost:5000 in your browser
 
 Instead of cloning the repo and building the Docker image on your machine, you can instead pull the image from the GitLab repo's Container Registry. The CI/CD pipeline automatically builds the image and pushes it to GitLab via the job `docker-image-build-and-push`.
 
