@@ -5,7 +5,7 @@ stages:
   - test
   - deploy
 
-install-packages:
+install-packages-and-persist:
   stage: build
   script:
     - python -m pip install virtualenv
@@ -21,8 +21,8 @@ install-packages:
 pylint:
   stage: build
   dependencies:
-    - install-packages
-  needs: [install-packages]
+    - install-packages-and-persist
+  needs: [install-packages-and-persist]
   script:
     - source venv/bin/activate
     - pylint *.py
@@ -43,8 +43,8 @@ docker-image-build-and-push:
 unit-test:
   stage: test
   dependencies:
-    - install-packages
-  needs: [install-packages]
+    - install-packages-and-persist
+  needs: [install-packages-and-persist]
   script:
     - source venv/bin/activate
     - pytest unit_tests.py
