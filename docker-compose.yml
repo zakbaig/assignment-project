@@ -1,0 +1,22 @@
+services:
+  lunch-coupon:
+    build: .
+    depends_on:
+      - postgres
+    env_file:
+      - .dockerenv
+    environment:
+      SQLALCHEMY_DATABASE_URI: postgresql+psycopg2://localhost:5432
+    networks:
+      - default
+    ports:
+      - 5000:5000
+    restart: always
+
+  postgres:
+    image: postgres:latest
+    networks:
+      - default
+    ports:
+      - 5432:5432
+    restart: always
