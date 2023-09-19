@@ -7,6 +7,9 @@ from config import Config
 
 flask_app = Flask(__name__)
 flask_app.config.from_object(Config)
+
+flask_app.logger.info('Initialising dependencies...')
+
 db = SQLAlchemy(flask_app)
 migrate = Migrate(flask_app, db)
 login = LoginManager(flask_app)
